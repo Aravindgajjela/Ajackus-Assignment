@@ -4,7 +4,8 @@ class UserForm extends Component {
   state = {
     name: this.props.user ? this.props.user.name : "",
     email: this.props.user ? this.props.user.email : "",
-    errors: {}, // Store validation errors
+    department: this.props.user ? this.props.user.department : "",
+    errors: {},
   };
 
   handleChange = (e) => {
@@ -13,10 +14,11 @@ class UserForm extends Component {
 
   validate = () => {
     const errors = {};
-    const { name, email } = this.state;
+    const { name, email, department } = this.state;
     if (!name.trim()) errors.name = "Name is required.";
     if (!email.trim()) errors.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Invalid email address.";
+    if (!department) errors.department = "Department is required.";
     return errors;
   };
 
@@ -33,7 +35,7 @@ class UserForm extends Component {
 
   render() {
     const { onClose } = this.props;
-    const { name, email, errors } = this.state;
+    const { name, email, department, errors } = this.state;
 
     return (
       <form onSubmit={this.handleSubmit} style={{ padding: "10px", maxWidth: "400px", margin: "auto" }}>
@@ -59,6 +61,23 @@ class UserForm extends Component {
             style={{ display: "block", width: "100%", marginBottom: "5px" }}
           />
           {errors.email && <p style={{ color: "red", fontSize: "12px" }}>{errors.email}</p>}
+        </label>
+        <label>
+          Department:
+          <select
+            name="department"
+            value={department}
+            onChange={this.handleChange}
+            style={{ display: "block", width: "100%", marginBottom: "5px" }}
+          >
+            <option value="">Select Department</option>
+            <option value="HR">HR</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Finance">Finance</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Sales">Sales</option>
+          </select>
+          {errors.department && <p style={{ color: "red", fontSize: "12px" }}>{errors.department}</p>}
         </label>
         <button type="submit" style={{ marginRight: "10px" }}>
           Save

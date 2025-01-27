@@ -8,13 +8,19 @@ class UserList extends Component {
     showForm: false,
     selectedUser: null,
     currentPage: 1,
-    usersPerPage: 5, // Number of users displayed per page
+    usersPerPage: 5,
   };
 
   componentDidMount() {
     fetch("https://jsonplaceholder.typicode.com/users")
       .then((response) => response.json())
-      .then((data) => this.setState({ users: data }))
+      .then((data) => {
+        const usersWithDepartments = data.map((user, index) => ({
+          ...user,
+          department: ["HR", "Engineering", "Finance", "Marketing", "Sales"][index % 5],
+        }));
+        this.setState({ users: usersWithDepartments });
+      })
       .catch(() => this.setState({ error: "Failed to fetch users" }));
   }
 
@@ -23,15 +29,9 @@ class UserList extends Component {
   };
 
   handleDelete = (id) => {
-    fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-      method: "DELETE",
-    })
-      .then(() => {
-        this.setState({
-          users: this.state.users.filter((user) => user.id !== id),
-        });
-      })
-      .catch(() => this.setState({ error: "Failed to delete user" }));
+    this.setState({
+      users: this.state.users.filter((user) => user.id !== id),
+    });
   };
 
   handleCloseForm = () => {
@@ -88,31 +88,35 @@ class UserList extends Component {
             >
               Add User
             </button>
-            <ul style={{ listStyle: "none", padding: "0" }}>
-              {currentUsers.map((user) => (
-                <li
-                  key={user.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "10px",
-                    padding: "10px",
-                    border: "1px solid #ccc",
-                    borderRadius: "5px",
-                  }}
-                >
-                  <div>
-                    <strong>{user.name}</strong> - {user.email}
-                  </div>
-                  <div>
-                    <button onClick={() => this.handleEdit(user)} style={{ marginRight: "5px" }}>
-                      Edit
-                    </button>
-                    <button onClick={() => this.handleDelete(user.id)}>Delete</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Email</th>
+                  <th>Department</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentUsers.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td>{user.name.split(" ")[0]}</td>
+                    <td>{user.name.split(" ")[1] || "N/A"}</td>
+                    <td>{user.email}</td>
+                    <td>{user.department}</td>
+                    <td>
+                      <button onClick={() => this.handleEdit(user)} style={{ marginRight: "5px" }}>
+                        Edit
+                      </button>
+                      <button onClick={() => this.handleDelete(user.id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             {this.renderPagination()}
           </div>
         )}
