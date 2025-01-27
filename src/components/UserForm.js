@@ -29,8 +29,18 @@ class UserForm extends Component {
       this.setState({ errors });
       return;
     }
-    console.log("Form submitted:", this.state);
-    this.props.onClose();
+
+    const { name, email, department } = this.state;
+    const user = { name, email, department };
+
+    if (this.props.user) {
+      // Editing existing user
+      this.props.onEdit(this.props.user.id, user);
+    } else {
+      // Adding new user
+      this.props.onAdd(user);
+    }
+    this.props.onClose(); // Close the form after submission
   };
 
   render() {

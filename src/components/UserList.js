@@ -12,6 +12,10 @@ class UserList extends Component {
   };
 
   componentDidMount() {
+    this.fetchUsers();
+  }
+
+  fetchUsers = () => {
     fetch("https://jsonplaceholder.typicode.com/users")
       .then((response) => response.json())
       .then((data) => {
@@ -22,16 +26,58 @@ class UserList extends Component {
         this.setState({ users: usersWithDepartments });
       })
       .catch(() => this.setState({ error: "Failed to fetch users" }));
-  }
+  };
+
+  handleAddUser = (newUser) => {
+    fetch("https://jsonplaceholder.typicode.com/users", {
+      method: "POST",
+      body: JSON.stringify(newUser),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((user) => {
+        this.setState({
+          users: [...this.state.users, user],
+        });
+      })
+      .catch(() => this.setState({ error: "Failed to add user" }));
+  };
+
+  handleEditUser = (userId, updatedData) => {
+    fetch(`https://jsonplaceholder.typicode.com/users/${userId}`, {
+      method: "PUT",
+      body: JSON.stringify(updatedData),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((updatedUser) => {
+        this.setState({
+          users: this.state.users.map((user) =>
+            user.id === userId ? updatedUser : user
+          ),
+        });
+      })
+      .catch(() => this.setState({ error: "Failed to update user" }));
+  };
+
+  handleDeleteUser = (userId) => {
+    fetch(`https://jsonplaceholder.typicode.com/users/${userId}`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        this.setState({
+          users: this.state.users.filter((user) => user.id !== userId),
+        });
+      })
+      .catch(() => this.setState({ error: "Failed to delete user" }));
+  };
 
   handleEdit = (user) => {
     this.setState({ showForm: true, selectedUser: user });
-  };
-
-  handleDelete = (id) => {
-    this.setState({
-      users: this.state.users.filter((user) => user.id !== id),
-    });
   };
 
   handleCloseForm = () => {
@@ -79,7 +125,12 @@ class UserList extends Component {
         <h2>User List</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {showForm ? (
-          <UserForm user={selectedUser} onClose={this.handleCloseForm} />
+          <UserForm
+            user={selectedUser}
+            onClose={this.handleCloseForm}
+            onAdd={this.handleAddUser}
+            onEdit={this.handleEditUser}
+          />
         ) : (
           <div>
             <button
@@ -111,7 +162,9 @@ class UserList extends Component {
                       <button onClick={() => this.handleEdit(user)} style={{ marginRight: "5px" }}>
                         Edit
                       </button>
-                      <button onClick={() => this.handleDelete(user.id)}>Delete</button>
+                      <button onClick={() => this.handleDeleteUser(user.id)} style={{ backgroundColor: "red", color: "white" }}>
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
